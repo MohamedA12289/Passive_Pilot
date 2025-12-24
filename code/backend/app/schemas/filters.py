@@ -19,4 +19,12 @@ class FilterSpec(BaseModel):
     absentee_owner: Optional[bool] = None
     property_types: Optional[List[str]] = None
     min_beds: Optional[int] = None
+    max_beds: Optional[int] = None
     min_baths: Optional[float] = None
+    max_baths: Optional[float] = None
+    min_sqft: Optional[int] = None
+    max_sqft: Optional[int] = None
+    min_year_built: Optional[int] = None
+    max_year_built: Optional[int] = None
+    min_lot_size: Optional[int] = None
+    max_lot_size: Optional[int] = None
