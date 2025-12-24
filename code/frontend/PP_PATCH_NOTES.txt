@@ -1,0 +1,7 @@
+Frontend 7 adds:
+- /analyzer (premium analyzer UI) calling POST {NEXT_PUBLIC_API_BASE_URL}/analyzer/analyze
+- /free-analyzer (UI-only placeholder)
+
+If you don't have NEXT_PUBLIC_API_BASE_URL set, it defaults to http://127.0.0.1:8000.
+
+Backend endpoint can be a placeholder for now (return { ok, summary, metrics, comps }).

@@ -1,0 +1,1 @@
+If you want the top-left logo image, add a file named logo.png in this folder.
