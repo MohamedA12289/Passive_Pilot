@@ -79,58 +79,66 @@ Phase 1 implements the core property data integration and deal scoring features:
 
 ## 🚀 Quick Start
 
-### Prerequisites
+Follow these steps to run PassivePilot locally with both backend and frontend:
+
+### 1) Prerequisites
 - Python 3.10+
 - Node.js 18+
-- PostgreSQL (or use SQLite for dev)
+- PostgreSQL (or use SQLite for local development)
 - ATTOM API key ([Get one here](https://api.developer.attomdata.com/))
 
-### Backend Setup
+### 2) Clone the repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/MohamedA12289/Passive_Pilot.git
-cd Passive_Pilot/code/backend
+cd Passive_Pilot
+```
 
-# Create virtual environment
+### 3) Start the backend (FastAPI)
+
+```bash
+cd code/backend
+
+# Create and activate a virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+# If pip is blocked by a proxy/SSL policy, see RUNBOOK.md for PowerShell proxy/env guidance and offline wheel installs.
 
-# Configure environment
+# Configure environment (includes ATTOM_API_KEY and DATABASE_URL)
 cp .env.example .env
-# Edit .env and add your ATTOM_API_KEY
+# Edit .env with your credentials; for SQLite use: DATABASE_URL=sqlite:///./passive_pilot.db
 
-# Run migrations
+# Apply database migrations
 alembic upgrade head
 
-# Start server
+# Run the API server
 uvicorn app.main:app --reload
 ```
 
-Backend running at: http://localhost:8000  
-API docs: http://localhost:8000/docs
+Backend available at http://localhost:8000 (Swagger UI at http://localhost:8000/docs).
 
-### Frontend Setup
+### 4) Start the frontend (Next.js)
+
+Open a new terminal (keeping the backend running) and run:
 
 ```bash
-# Navigate to frontend
-cd ../frontend
+cd Passive_Pilot/code/frontend
 
 # Install dependencies
 npm install
 
-# Configure environment
+# Configure environment with backend URL
 cp .env.example .env.local
-# Edit .env.local with your backend URL
+# Edit .env.local to set NEXT_PUBLIC_API_URL=http://localhost:8000
 
-# Start development server
+# Run the web app
 npm run dev
 ```
 
-Frontend running at: http://localhost:3000
+Frontend available at http://localhost:3000.
 
 ## ⚙️ Configuration
 

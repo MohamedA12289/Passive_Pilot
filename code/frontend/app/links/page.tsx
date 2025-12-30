@@ -6,7 +6,7 @@
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 
-function Section({ title, children }: {{ title: string; children: React.ReactNode }}) {{
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-6 shadow-sm">
@@ -17,9 +17,9 @@ function Section({ title, children }: {{ title: string; children: React.ReactNod
       </div>
     </section>
   );
-}}
+}
 
-export default function Page() {{
+export default function Page() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <Navigation />
@@ -35,4 +35,4 @@ export default function Page() {{
       <Footer />
     </div>
   );
-}}
+}
