@@ -16,13 +16,17 @@ from app.routers import auth, admin, billing, campaigns, leads, providers, campa
 from app.routers import dev_tools
 from app.routers import admin_audit
 from app.routers import dev_audit
-
-# ✅ stats + developer-only
-from app.routers import admin_stats
-from app.routers import developer
-
-# ✅ NEW: campaign filters endpoints
 from app.routers import campaign_filters
+
+try:
+    from app.routers import admin_stats
+except ImportError:
+    admin_stats = None  # TODO: add admin_stats router module when available
+
+try:
+    from app.routers import developer
+except ImportError:
+    developer = None  # TODO: add developer router module when available
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -215,11 +219,15 @@ app.include_router(deals.router, prefix="/deals", tags=["deals"])
 # Admin (dev can access admin endpoints because require_roles expands admin->dev)
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(admin_audit.router, prefix="/admin", tags=["admin-audit"])
-app.include_router(admin_stats.router, prefix="/admin", tags=["admin-stats"])
+if admin_stats:
+    app.include_router(admin_stats.router, prefix="/admin", tags=["admin-stats"])
+# TODO: enable admin_stats router once module is available
 
 # Dev tools (kill switch etc.)
 app.include_router(dev_tools.router, prefix="/dev", tags=["dev-tools"])
 app.include_router(dev_audit.router, prefix="/dev", tags=["dev-audit"])
 
 # Developer-only dashboard API (dev only)
-app.include_router(developer.router, prefix="/developer", tags=["developer"])
+if developer:
+    app.include_router(developer.router, prefix="/developer", tags=["developer"])
+# TODO: enable developer router once module is available

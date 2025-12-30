@@ -105,6 +105,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+# If pip is blocked by a proxy/SSL policy, see RUNBOOK.md for PowerShell proxy/env guidance and offline wheel installs.
 
 # Configure environment (includes ATTOM_API_KEY and DATABASE_URL)
 cp .env.example .env

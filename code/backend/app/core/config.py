@@ -1,5 +1,7 @@
+import json
 from typing import List, Union
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,11 +17,18 @@ class Settings(BaseSettings):
     # DB
     DATABASE_URL: str = "sqlite:///./passive_pilot.db"
 
-    # CORS (accept list OR comma-separated string from env)
+    # CORS (accept list OR comma-separated/JSON string from env)
     CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
+    """Allowed CORS origins.
+
+    Accepts:
+    1. JSON list string: '["http://localhost:3000","http://127.0.0.1:3000"]'
+    2. Comma-separated string: 'http://localhost:3000,http://127.0.0.1:3000'
+    3. Single origin string.
+    """
 
     # Admin bootstrap (optional)
     BOOTSTRAP_ADMIN_EMAIL: str | None = None
@@ -50,9 +59,30 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value):
+        if value is None:
+            return []
+
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return []
+
+            try:
+                parsed = json.loads(stripped)
+                if isinstance(parsed, list):
+                    return [str(item).strip() for item in parsed if str(item).strip()]
+            except json.JSONDecodeError:
+                pass
+
+            return [s.strip() for s in stripped.split(",") if s.strip()]
+
+        if isinstance(value, list):
+            return value
+
+        return [str(value)]
+
 
 settings = Settings()
-
-# Normalize CORS_ORIGINS if it comes as a comma-separated string
-if isinstance(settings.CORS_ORIGINS, str):
-    settings.CORS_ORIGINS = [s.strip() for s in settings.CORS_ORIGINS.split(",") if s.strip()]
