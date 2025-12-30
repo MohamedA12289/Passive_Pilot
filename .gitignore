@@ -39,6 +39,17 @@ venv/
 __pycache__/
 *.pyc
 
+# Python virtual envs
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Env files
 .env
 .env.*
