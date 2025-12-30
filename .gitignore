@@ -38,3 +38,14 @@ venv/
 *.db
 *.sqlite
 *.sqlite3
+
+# Python
+**/venv/
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Env files
+**/.env
+**/.env.*
+!.env.example
