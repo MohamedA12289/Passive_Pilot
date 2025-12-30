@@ -1,0 +1,8 @@
+# Default owner for everything
+* @YOUR_GITHUB_USERNAME
+
+# Lock sensitive areas
+backend/app/core/ @YOUR_GITHUB_USERNAME
+backend/app/models/ @YOUR_GITHUB_USERNAME
+backend/app/routers/auth* @YOUR_GITHUB_USERNAME
+.github/workflows/ @YOUR_GITHUB_USERNAME
