@@ -15,6 +15,7 @@ interface NavItem {
 
 export default function Navigation() {
   const pathname = usePathname();
+  const isDashboardExperience = pathname?.startsWith("/dashboard");
   const [activeTab, setActiveTab] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,6 +55,10 @@ export default function Navigation() {
       setActiveTab(items[0].name);
     }
   }, [pathname, items]);
+
+  if (isDashboardExperience) {
+    return null;
+  }
 
   return (
     <>

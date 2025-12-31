@@ -55,6 +55,18 @@ export default function CampaignPage() {
   const [importPct, setImportPct] = useState(0);
   const [importNote, setImportNote] = useState<string | null>(null);
 
+  async function downloadFile(path: string, filename: string, auth?: boolean) {
+    const blob = await apiDownload(path, { auth });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+  }
+
   async function load() {
     setErr(null);
     try {
@@ -153,7 +165,7 @@ export default function CampaignPage() {
         `/exports/campaigns/${campaignId}/leads-by-zip`,
         { method: "POST", auth: true, body: {} }
       );
-      await apiDownload(res.download_url, res.filename, true);
+      await downloadFile(res.download_url, res.filename, true);
     } catch (e: any) {
       setErr(e.message || "Export failed");
     } finally {
