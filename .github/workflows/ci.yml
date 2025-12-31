@@ -4,7 +4,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
 
 jobs:
   frontend-build:
@@ -37,3 +36,10 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Print diagnostics on failure
+        if: failure()
+        run: |
+          node -v
+          npm -v
+          npm config get registry
