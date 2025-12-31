@@ -120,10 +120,6 @@ uvicorn app.main:app --reload
 
 Backend available at http://localhost:8000 (Swagger UI at http://localhost:8000/docs).
 
-### Local backend tips
-- Keep your virtual environment untracked (`venv/`, `.venv/`).
-- If you need a clean environment, remove the folder locally and recreate it with `python -m venv venv` followed by `pip install -r requirements.txt`.
-
 ### 4) Start the frontend (Next.js)
 
 Open a new terminal (keeping the backend running) and run:
@@ -143,13 +139,6 @@ npm run dev
 ```
 
 Frontend available at http://localhost:3000.
-
-### Local frontend tips
-- Never commit `node_modules/` or `.next/`; they are local build artifacts.
-- For production testing, run `npm run build` to mirror CI behavior.
-
-### Safety reminder for local work
-- Do **not** commit local environment or build artifacts: `venv/`, `.venv/`, `node_modules/`, `.next/`, or any `.env.local` files.
 
 ## ⚙️ Configuration
 
@@ -361,11 +350,6 @@ npm test
 # Run with coverage
 npm test -- --coverage
 ```
-
-## 🧭 Troubleshooting CI
-- Verify lockfiles are up to date (`requirements.txt`, `package-lock.json`) and reinstall dependencies locally if builds fail.
-- Ensure no local artifacts are committed (`venv/`, `.venv/`, `node_modules/`, `.next/`, `.env.local`).
-- Re-run workflows from **Actions → CI → Run workflow** if a transient error occurs, and check logs for the failing step.
 
 ## 🚢 Deployment
 
