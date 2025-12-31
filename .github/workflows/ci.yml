@@ -5,13 +5,14 @@ on:
     branches: [ "main", "feature-*" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   frontend-tests:
     name: Frontend tests
     runs-on: ubuntu-latest
-    # Only run if there's a package.json (JS/TS project)
-    if: hashFiles('package.json') != ''
+    # Only run if the frontend package.json exists
+    if: ${{ exists('code/frontend/package.json') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,22 +23,18 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        working-directory: code/frontend
 
-      - name: Run tests
-        # Change this if you use a different test script
-        run: |
-          if npm run | grep -q "test"; then
-            npm test
-          else
-            echo "No test script defined, skipping tests."
-          fi
+      - name: Build
+        run: npm run build
+        working-directory: code/frontend
 
   backend-tests:
     name: Backend tests
     runs-on: ubuntu-latest
-    # Only run if there's a requirements.txt (Python project)
-    if: hashFiles('requirements.txt') != ''
+    # Only run if the backend requirements.txt exists
+    if: ${{ exists('code/backend/requirements.txt') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,15 +45,4 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run tests
-        # Change this if you don't use pytest
-        run: |
-          if python -m pytest --help > /dev/null 2>&1; then
-            pytest
-          else
-            echo "pytest not configured, skipping tests."
-          fi
+        run: python -m pip install -r code/backend/requirements.txt
