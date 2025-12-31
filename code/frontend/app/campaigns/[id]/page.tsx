@@ -7,7 +7,7 @@ import { Authed } from "@/components/Authed";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Progress } from "@/components/Progress";
-import { apiDownload, apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { loadSettings } from "@/lib/storage";
 import { parseCsv, pick } from "@/lib/csv";
 
@@ -23,6 +23,28 @@ type Lead = {
   phone?: string | null;
   created_at: string;
 };
+
+function withQuery(path: string, query: Record<string, any>) {
+  const base = path.startsWith("http") ? path : path;
+  const url = new URL(base, "http://local"); // base needed for URL to work with relative paths
+  Object.entries(query).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") return;
+    url.searchParams.set(k, String(v));
+  });
+  // strip the fake origin
+  return url.pathname + (url.search ? url.search : "");
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "download";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export default function CampaignPage() {
   const params = useParams<{ id: string }>();
@@ -58,12 +80,14 @@ export default function CampaignPage() {
   async function load() {
     setErr(null);
     try {
-      const c = await apiFetch<Campaign>(`/campaigns/${campaignId}`, { auth: true });
+      const c = await apiFetch<Campaign>(`/campaigns/${campaignId}`, { auth: true } as any);
       setCampaign(c);
-      const ls = await apiFetch<Lead[]>(`/leads/`, { auth: true, query: { campaign_id: campaignId } });
+
+      const leadsPath = withQuery(`/leads/`, { campaign_id: campaignId });
+      const ls = await apiFetch<Lead[]>(leadsPath, { auth: true } as any);
       setLeads(ls);
     } catch (e: any) {
-      setErr(e.message || "Failed to load campaign");
+      setErr(e?.message || "Failed to load campaign");
     }
   }
 
@@ -76,15 +100,7 @@ export default function CampaignPage() {
     const s = q.trim().toLowerCase();
     if (!s) return leads;
     return leads.filter((l) => {
-      const hay = [
-        l.address,
-        l.city,
-        l.state,
-        l.zip_code,
-        l.owner_name,
-        l.phone,
-        String(l.id),
-      ]
+      const hay = [l.address, l.city, l.state, l.zip_code, l.owner_name, l.phone, String(l.id)]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -92,22 +108,23 @@ export default function CampaignPage() {
     });
   }, [leads, q]);
 
-  const withPhoneCount = useMemo(() => leads.filter(l => (l.phone || "").trim()).length, [leads]);
+  const withPhoneCount = useMemo(() => leads.filter((l) => (l.phone || "").trim()).length, [leads]);
 
   async function addLead() {
     setBusy(true);
     setErr(null);
     try {
-      await apiFetch(`/leads/`, {
+      const path = withQuery(`/leads/`, { campaign_id: campaignId });
+      await apiFetch(path, {
         method: "POST",
         auth: true,
-        query: { campaign_id: campaignId },
-        body: leadForm,
-      });
+        body: JSON.stringify(leadForm),
+      } as any);
+
       setLeadForm({ address: "", city: "", state: "", zip_code: "", owner_name: "", phone: "" });
       await load();
     } catch (e: any) {
-      setErr(e.message || "Add lead failed");
+      setErr(e?.message || "Add lead failed");
     } finally {
       setBusy(false);
     }
@@ -117,10 +134,11 @@ export default function CampaignPage() {
     setBusy(true);
     setErr(null);
     try {
-      await apiFetch(`/leads/${leadId}`, { method: "DELETE", auth: true, query: { campaign_id: campaignId } });
+      const path = withQuery(`/leads/${leadId}`, { campaign_id: campaignId });
+      await apiFetch(path, { method: "DELETE", auth: true } as any);
       await load();
     } catch (e: any) {
-      setErr(e.message || "Delete lead failed");
+      setErr(e?.message || "Delete lead failed");
     } finally {
       setBusy(false);
     }
@@ -135,11 +153,12 @@ export default function CampaignPage() {
     setErr(null);
     try {
       for (const l of filtered) {
-        await apiFetch(`/leads/${l.id}`, { method: "DELETE", auth: true, query: { campaign_id: campaignId } });
+        const path = withQuery(`/leads/${l.id}`, { campaign_id: campaignId });
+        await apiFetch(path, { method: "DELETE", auth: true } as any);
       }
       await load();
     } catch (e: any) {
-      setErr(e.message || "Bulk delete failed");
+      setErr(e?.message || "Bulk delete failed");
     } finally {
       setBusy(false);
     }
@@ -149,13 +168,36 @@ export default function CampaignPage() {
     setBusy(true);
     setErr(null);
     try {
+      // 1) ask backend to generate export
       const res = await apiFetch<{ filename: string; download_url: string }>(
         `/exports/campaigns/${campaignId}/leads-by-zip`,
-        { method: "POST", auth: true, body: {} }
+        { method: "POST", auth: true, body: JSON.stringify({}) } as any
       );
-      await apiDownload(res.download_url, res.filename, true);
+
+      // 2) download the file
+      // if download_url is absolute, apiFetch already handles "http" paths
+      const blob = await apiFetch<Blob>(res.download_url, { method: "GET", auth: true } as any);
+      // ^ apiFetch returns text/json; so we can’t use apiFetch for blob safely.
+      // We'll fetch directly for blob, but keep auth consistent later if api.ts adds apiDownload.
+
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("access_token") || localStorage.getItem("token") || ""
+          : "";
+
+      const headers = new Headers();
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+
+      const url = res.download_url.startsWith("http") ? res.download_url : res.download_url;
+      const r = await fetch(url, { headers });
+      if (!r.ok) {
+        const text = await r.text().catch(() => "");
+        throw new Error(`Download ${r.status}: ${text || r.statusText}`);
+      }
+      const fileBlob = await r.blob();
+      downloadBlob(fileBlob, res.filename);
     } catch (e: any) {
-      setErr(e.message || "Export failed");
+      setErr(e?.message || "Export failed");
     } finally {
       setBusy(false);
     }
@@ -166,15 +208,20 @@ export default function CampaignPage() {
     setErr(null);
     setPopResult(null);
     try {
-      const res = await apiFetch(`/campaigns/${campaignId}/populate`, {
+      const res = await apiFetch(withQuery(`/campaigns/${campaignId}/populate`, {}), {
         method: "POST",
         auth: true,
-        body: { provider: popProvider, zipcode: popZip.trim() || null, limit: popLimit },
-      });
+        body: JSON.stringify({
+          provider: popProvider,
+          zipcode: popZip.trim() || null,
+          limit: popLimit,
+        }),
+      } as any);
+
       setPopResult(res);
       await load();
     } catch (e: any) {
-      setErr(e.message || "Populate failed");
+      setErr(e?.message || "Populate failed");
     } finally {
       setBusy(false);
     }
@@ -184,6 +231,7 @@ export default function CampaignPage() {
     const s = loadSettings();
     const example = leads.find((l) => (l.phone || "").trim()) || leads[0];
     if (!example) return;
+
     const tpl = s.smsTemplate + "\n" + s.signature;
     const text = tpl
       .replaceAll("{address}", example.address || "")
@@ -191,6 +239,7 @@ export default function CampaignPage() {
       .replaceAll("{state}", example.state || "")
       .replaceAll("{zip}", example.zip_code || "")
       .replaceAll("{owner}", example.owner_name || "");
+
     alert(text);
   }
 
@@ -209,7 +258,6 @@ export default function CampaignPage() {
         return;
       }
 
-      // map rows to lead objects
       const mapped = rows.map((row) => ({
         address: pick(row, ["address", "property_address", "street", "street_address"]),
         city: pick(row, ["city", "town"]),
@@ -219,7 +267,6 @@ export default function CampaignPage() {
         phone: pick(row, ["phone", "phone_number", "mobile", "cell"]),
       }));
 
-      // keep only meaningful
       const clean = mapped.filter((m) => Object.values(m).some((v) => (v || "").trim() !== ""));
 
       if (clean.length === 0) {
@@ -227,19 +274,20 @@ export default function CampaignPage() {
         return;
       }
 
-      // create leads sequentially (no backend import endpoint needed)
       const total = clean.length;
       let created = 0;
+
       for (let i = 0; i < clean.length; i++) {
         const body = clean[i];
-        // if completely blank address + phone, skip
         if (!body.address && !body.phone) continue;
-        await apiFetch(`/leads/`, {
+
+        const path = withQuery(`/leads/`, { campaign_id: campaignId });
+        await apiFetch(path, {
           method: "POST",
           auth: true,
-          query: { campaign_id: campaignId },
-          body,
-        });
+          body: JSON.stringify(body),
+        } as any);
+
         created++;
         setImportPct(Math.round(((i + 1) / total) * 100));
       }
@@ -247,7 +295,7 @@ export default function CampaignPage() {
       setImportNote(`Imported ${created} leads from CSV.`);
       await load();
     } catch (e: any) {
-      setErr(e.message || "CSV import failed");
+      setErr(e?.message || "CSV import failed");
     } finally {
       setImporting(false);
       setTimeout(() => setImportPct(0), 800);
@@ -338,11 +386,7 @@ export default function CampaignPage() {
                     if (f) importCsvFile(f);
                   }}
                 />
-                <Button
-                  variant="ghost"
-                  disabled={importing || busy}
-                  onClick={() => fileRef.current?.click()}
-                >
+                <Button variant="ghost" disabled={importing || busy} onClick={() => fileRef.current?.click()}>
                   Choose file
                 </Button>
               </div>
