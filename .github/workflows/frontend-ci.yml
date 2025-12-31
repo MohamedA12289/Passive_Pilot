@@ -1,0 +1,72 @@
+name: Frontend CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build (frontend)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: code/frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: code/frontend/package-lock.json
+
+      - name: Versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Lint (if present)
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "No lint script; skipping"
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "Node version:" && node -v
+          echo "npm version:" && npm -v
+          echo "npm registry:" && npm config get registry
+
+          echo "Checking .npmrc files (redacted if tokens exist)..."
+          if [ -f ../.npmrc ]; then
+            echo "--- .npmrc (repo root) ---"
+            sed -E 's/(token|_auth|password|_authToken)=.*/\1=<redacted>/Ig' ../.npmrc
+          else
+            echo "No .npmrc in repo root"
+          fi
+
+          if [ -f .npmrc ]; then
+            echo "--- .npmrc (code/frontend) ---"
+            sed -E 's/(token|_auth|password|_authToken)=.*/\1=<redacted>/Ig' .npmrc
+          else
+            echo "No .npmrc in code/frontend"
+          fi
