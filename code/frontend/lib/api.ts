@@ -1,20 +1,59 @@
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+// code/frontend/lib/api.ts
+
+export const apiBase =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
+  process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ||
+  "http://127.0.0.1:8000";
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token") || localStorage.getItem("token");
+  return (
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("pp_token")
+  );
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+export type ApiOptions = RequestInit & {
+  auth?: boolean;
+  query?: Record<string, string | number | boolean | null | undefined>;
+};
+
+function buildUrl(path: string, query?: ApiOptions["query"]): string {
+  const base = path.startsWith("http")
+    ? path
+    : `${apiBase}${path.startsWith("/") ? "" : "/"}${path}`;
+
+  if (!query) return base;
+
+  const url = new URL(base);
+  for (const [k, v] of Object.entries(query)) {
+    if (v === undefined || v === null) continue;
+    url.searchParams.set(k, String(v));
+  }
+  return url.toString();
+}
+
+function withAuthHeaders(init: ApiOptions): RequestInit {
+  const headers = new Headers(init.headers || {});
   const token = getAccessToken();
 
-  const headers = new Headers(init.headers || {});
-  if (!headers.has("Content-Type") && init.body) headers.set("Content-Type", "application/json");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  // Only set JSON header when body exists and Content-Type not set
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
 
-  const res = await fetch(url, { ...init, headers });
+  if (init.auth && token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const { auth: _auth, query: _query, ...rest } = init;
+  return { ...rest, headers };
+}
+
+export async function apiFetch<T>(path: string, init: ApiOptions = {}): Promise<T> {
+  const url = buildUrl(path, init.query);
+  const res = await fetch(url, withAuthHeaders(init));
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -24,4 +63,16 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const ct = res.headers.get("content-type") || "";
   if (!ct.includes("application/json")) return (await res.text()) as unknown as T;
   return (await res.json()) as T;
+}
+
+export async function apiDownload(path: string, init: ApiOptions = {}): Promise<Blob> {
+  const url = buildUrl(path, init.query);
+  const res = await fetch(url, withAuthHeaders(init));
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Download ${res.status}: ${text || res.statusText}`);
+  }
+
+  return await res.blob();
 }

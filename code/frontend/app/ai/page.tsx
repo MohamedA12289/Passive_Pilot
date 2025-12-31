@@ -57,7 +57,7 @@ export default function AIPage() {
       try {
         await loadCampaigns();
       } catch (e: any) {
-        setErr(e.message || "Failed to load campaigns");
+        setErr(e?.message || "Failed to load campaigns");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,13 +69,13 @@ export default function AIPage() {
       try {
         await loadLeads(campaignId);
       } catch (e: any) {
-        setErr(e.message || "Failed to load leads");
+        setErr(e?.message || "Failed to load leads");
       }
     })();
   }, [campaignId]);
 
   const sample = useMemo(() => {
-    const withPhone = leads.filter(l => (l.phone || "").trim());
+    const withPhone = leads.filter((l) => (l.phone || "").trim());
     return (withPhone[0] || leads[0]) ?? null;
   }, [leads]);
 
@@ -88,28 +88,33 @@ export default function AIPage() {
       const res = await apiFetch<{ message: string }>("/ai/generate-sms", {
         method: "POST",
         auth: true,
-        body: {
-          persona,
-          goal,
-          lead: {
-            address: sample.address,
-            city: sample.city,
-            state: sample.state,
-            zip_code: sample.zip_code,
-            owner_name: sample.owner_name,
-          },
-          template: tpl,
-        },
+      body: JSON.stringify({
+  persona,
+  goal,
+  lead: {
+    address: sample.address,
+    city: sample.city,
+    state: sample.state,
+    zip_code: sample.zip_code,
+    owner_name: sample.owner_name,
+  },
+  template: tpl,
+}),
+
       });
 
       setTpl(res.message);
       // toast
       // @ts-ignore
-      if (typeof window !== "undefined" && (window as any).__pp_toast) (window as any).__pp_toast("AI generated a new template", "good");
+      if (typeof window !== "undefined" && (window as any).__pp_toast) {
+        (window as any).__pp_toast("AI generated a new template", "good");
+      }
     } catch (e: any) {
-      setErr(e.message || "AI generate failed");
+      setErr(e?.message || "AI generate failed");
       // @ts-ignore
-      if (typeof window !== "undefined" && (window as any).__pp_toast) (window as any).__pp_toast("AI not configured yet (placeholder)", "warn");
+      if (typeof window !== "undefined" && (window as any).__pp_toast) {
+        (window as any).__pp_toast("AI not configured yet (placeholder)", "warn");
+      }
     } finally {
       setBusy(false);
     }
@@ -137,10 +142,15 @@ export default function AIPage() {
             <select
               className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm outline-none focus:border-zinc-600"
               value={campaignId ?? ""}
-              onChange={(e) => setCampaignId(Number(e.target.value))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setCampaignId(v ? Number(v) : null);
+              }}
             >
               {campaigns.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </select>
 
