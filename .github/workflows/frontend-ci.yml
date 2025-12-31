@@ -3,7 +3,8 @@ name: Frontend CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
@@ -25,11 +26,6 @@ jobs:
           cache: npm
           cache-dependency-path: code/frontend/package-lock.json
 
-      - name: Versions
-        run: |
-          node -v
-          npm -v
-
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -38,12 +34,14 @@ jobs:
             npm install
           fi
 
-      - name: Lint (if present)
+      # ✅ FIX: Next.js "lint" can prompt interactively if ESLint isn't configured.
+      # We only run lint if an ESLint config file exists.
+      - name: Lint (if configured)
         run: |
-          if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)"; then
+          if [ -f .eslintrc.json ] || [ -f .eslintrc.js ] || [ -f .eslintrc.cjs ] || [ -f .eslintrc.yml ] || [ -f .eslintrc.yaml ]; then
             npm run lint
           else
-            echo "No lint script; skipping"
+            echo "ESLint not configured yet; skipping lint"
           fi
 
       - name: Build
@@ -55,18 +53,17 @@ jobs:
           echo "Node version:" && node -v
           echo "npm version:" && npm -v
           echo "npm registry:" && npm config get registry
-
-          echo "Checking .npmrc files (redacted if tokens exist)..."
+          echo "working dir:" && pwd
+          ls -la
           if [ -f ../.npmrc ]; then
             echo "--- .npmrc (repo root) ---"
-            sed -E 's/(token|_auth|password|_authToken)=.*/\1=<redacted>/Ig' ../.npmrc
+            sed 's/=.*token.*/=<redacted>/I' ../.npmrc
           else
             echo "No .npmrc in repo root"
           fi
-
           if [ -f .npmrc ]; then
             echo "--- .npmrc (code/frontend) ---"
-            sed -E 's/(token|_auth|password|_authToken)=.*/\1=<redacted>/Ig' .npmrc
+            sed 's/=.*token.*/=<redacted>/I' .npmrc
           else
             echo "No .npmrc in code/frontend"
           fi
