@@ -1,13 +1,17 @@
 # Dependencies
 node_modules/
+**/node_modules/
 .pnp
 .pnp.js
 
 # Build outputs
 .next/
+**/.next/
 out/
 build/
+**/build/
 dist/
+**/dist/
 
 # Environment variables
 .env
