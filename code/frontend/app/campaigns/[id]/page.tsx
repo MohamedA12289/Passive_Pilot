@@ -7,7 +7,7 @@ import { Authed } from "@/components/Authed";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Progress } from "@/components/Progress";
-import { apiDownload, apiFetch } from "@/lib/api";
+import { API_BASE, apiFetch } from "@/lib/api";
 import { loadSettings } from "@/lib/storage";
 import { parseCsv, pick } from "@/lib/csv";
 
@@ -54,6 +54,29 @@ export default function CampaignPage() {
   const [importing, setImporting] = useState(false);
   const [importPct, setImportPct] = useState(0);
   const [importNote, setImportNote] = useState<string | null>(null);
+
+  async function downloadFile(path: string, filename: string, auth?: boolean) {
+    const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+    const headers: Record<string, string> = {};
+
+    if (auth && typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (token) headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(`Download failed (${res.status})`);
+
+    const blob = await res.blob();
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+  }
 
   async function load() {
     setErr(null);
@@ -153,7 +176,7 @@ export default function CampaignPage() {
         `/exports/campaigns/${campaignId}/leads-by-zip`,
         { method: "POST", auth: true, body: {} }
       );
-      await apiDownload(res.download_url, res.filename, true);
+      await downloadFile(res.download_url, res.filename, true);
     } catch (e: any) {
       setErr(e.message || "Export failed");
     } finally {

@@ -39,7 +39,9 @@ export function TaskCard({
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={completed}
-              onCheckedChange={(checked) => onComplete(id, checked as boolean)}
+              onCheckedChange={(checked: boolean | string | null) =>
+                onComplete(id, Boolean(checked))
+              }
             />
             <CardTitle className={`text-lg ${completed ? 'line-through' : ''}`}>
               {title}

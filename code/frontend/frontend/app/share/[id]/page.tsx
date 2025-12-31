@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getAnalysis } from "@/components/analysis/analysisStore";
+import { getAnalysis } from "@/frontend/components/analysis/analysisStore";
 
 export default function Page() {
   const params = useParams<{ id: string }>();
