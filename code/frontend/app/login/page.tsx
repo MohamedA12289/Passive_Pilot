@@ -7,7 +7,7 @@ import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { getToken, setToken } from "@/lib/storage";
-import { apiBase } from "@/lib/api";
+import { API_BASE } from "@/lib/api";
 
 type Token = { access_token: string; token_type: string };
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
     setErr(null);
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase()}/auth/login`, {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username: email, password }),
