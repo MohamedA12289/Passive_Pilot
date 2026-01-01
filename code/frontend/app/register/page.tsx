@@ -6,8 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/storage";
+import { getSession, isEmailVerified, signUp, isSupabaseConfigured } from "@/lib/supabase/auth";
 
 function getPasswordError(pw: string): string | null {
   if (/\s/.test(pw)) return "Password must have no white space";
@@ -23,21 +22,40 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
 
   const [err, setErr] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // If already logged in, bounce
   useEffect(() => {
-    const t = getToken();
-    if (t) router.push("/dashboard");
+    (async () => {
+      try {
+        const session = await getSession();
+        if (session && isEmailVerified(session.user ?? null)) router.push("/dashboard");
+      } catch {
+        // ignore
+      }
+    })();
   }, [router]);
+
+  // If Supabase isn't configured, show a clear message
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+    }
+  }, []);
 
   const passwordError = useMemo(() => getPasswordError(password), [password]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    setMessage(null);
 
-    // Frontend guardrail (same rules as backend)
+    if (!isSupabaseConfigured()) {
+      setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      return;
+    }
+
     const pwErr = getPasswordError(password);
     if (pwErr) {
       setErr(pwErr);
@@ -46,12 +64,9 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await apiFetch("/auth/register", {
-        method: "POST",
-        json: { email, password },
-      });
-
-      router.push("/login");
+      await signUp(email, password);
+      setPassword("");
+      setMessage("Check your email to verify your account, then log in.");
     } catch (e: any) {
       setErr(e?.message || "Registration failed");
     } finally {
@@ -70,6 +85,7 @@ export default function RegisterPage() {
         <p className="text-sm text-zinc-400 mb-6">Register, then log in.</p>
 
         {err ? <div className="mb-4 text-sm text-red-400">{err}</div> : null}
+        {message ? <div className="mb-4 text-sm text-emerald-400">{message}</div> : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <Input
@@ -77,6 +93,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@email.com"
+            required
           />
 
           <div>
@@ -86,16 +103,23 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
+              required
             />
-            {passwordError ? (
-              <div className="mt-1 text-xs text-red-400">{passwordError}</div>
-            ) : null}
+            {passwordError ? <div className="mt-1 text-xs text-red-400">{passwordError}</div> : null}
           </div>
 
-          <Button variant="primary" disabled={loading} className="w-full">
+          <Button variant="primary" disabled={loading} className="w-full" type="submit">
             {loading ? "Creating..." : "Create account"}
           </Button>
         </form>
+
+        {message ? (
+          <div className="mt-4">
+            <Button className="w-full" onClick={() => router.push("/login")}>
+              Go to login
+            </Button>
+          </div>
+        ) : null}
 
         <div className="mt-5 text-sm text-zinc-400">
           Already have an account?{" "}
