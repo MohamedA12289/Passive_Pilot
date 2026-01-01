@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSession, isEmailVerified, onAuthStateChange, signOut } from "@/lib/supabase/auth";
+import {
+  getSession,
+  isEmailVerified,
+  onAuthStateChange,
+  signOut,
+  isSupabaseConfigured,
+} from "@/lib/supabase/auth";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,6 +21,13 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
       const params = new URLSearchParams();
       params.set("message", message);
       router.replace(`/login?${params.toString()}`);
+    }
+
+    // If Supabase isn't configured, don't hard-crash the app.
+    // Just send user to login with a clear message.
+    if (!isSupabaseConfigured()) {
+      redirect("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      return;
     }
 
     async function validateSession() {
