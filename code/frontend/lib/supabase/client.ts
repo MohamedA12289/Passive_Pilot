@@ -9,11 +9,23 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const supabase: SupabaseClient | null =
   supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
-export function assertSupabaseConfigured(): asserts supabase is SupabaseClient {
+export function isSupabaseConfigured(): boolean {
+  return Boolean(supabase);
+}
+
+/**
+ * Use this inside event handlers / client-only flows when you need a real client.
+ * Example:
+ *   const sb = requireSupabase();
+ *   await sb.auth.signInWithPassword(...)
+ */
+export function requireSupabase(): SupabaseClient {
   if (!supabaseUrl) {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL. Add it to your environment variables.");
   }
   if (!supabaseAnonKey) {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Add it to your environment variables.");
   }
+  // At this point, supabase must be non-null
+  return createClient(supabaseUrl, supabaseAnonKey);
 }
