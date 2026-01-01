@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DealStatusBadge from "@/components/deals/DealStatusBadge";
-import DealTimeline from "@/components/deals/DealTimeline";
-import { listDeals, upsertDeal, type Deal, type DealStatus } from "@/components/deals/dealsStore";
+import DealStatusBadge from "@/frontend/components/deals/DealStatusBadge";
+import DealTimeline from "@/frontend/components/deals/DealTimeline";
+import { listDeals, upsertDeal, type Deal, type DealStatus } from "@/frontend/components/deals/dealsStore";
 
 export default function TrackDealPage() {
   const sp = useSearchParams();

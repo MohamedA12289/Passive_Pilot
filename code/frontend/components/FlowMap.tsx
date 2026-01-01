@@ -1,28 +1,8 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
-
-import { useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import type { LatLngBoundsExpression } from "leaflet";
-import L from "leaflet";
+import { useEffect, useState } from "react";
 
 import { geocodeNominatim, type GeocodeResult } from "@/lib/geocode";
-
-// Fix Leaflet marker icons in Next.js / Webpack
-const defaultIcon = L.icon({
-  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url).toString(),
-  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).toString(),
-  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url).toString(),
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = defaultIcon;
-
-// Dynamically import react-leaflet to avoid SSR issues
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 
 type Props = {
   value?: GeocodeResult | null;
@@ -35,37 +15,10 @@ export default function FlowMap({ value, onChange, placeholder }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Map refs
-  const mapRef = useRef<any>(null);
-
-  const center = useMemo(() => {
-    if (value) return [value.lat, value.lon] as [number, number];
-    // Default: US center-ish
-    return [39.5, -98.35] as [number, number];
-  }, [value]);
-
-  const zoom = useMemo(() => (value ? 12 : 4), [value]);
-
   useEffect(() => {
     // Keep input in sync when parent changes
     if (value?.displayName) setQuery(value.displayName);
   }, [value?.displayName]);
-
-  function fitTo(result: GeocodeResult) {
-    const map = mapRef.current;
-    if (!map) return;
-
-    if (result.bbox) {
-      const [south, north, west, east] = result.bbox;
-      const bounds: LatLngBoundsExpression = [
-        [south, west],
-        [north, east],
-      ];
-      map.fitBounds(bounds, { padding: [30, 30] });
-    } else {
-      map.setView([result.lat, result.lon], 12, { animate: true });
-    }
-  }
 
   async function handleSearch() {
     setError(null);
@@ -83,7 +36,6 @@ export default function FlowMap({ value, onChange, placeholder }: Props) {
         return;
       }
       onChange?.(hit);
-      fitTo(hit);
     } catch (e: any) {
       setError("Search failed. Try again.");
     } finally {
@@ -127,24 +79,19 @@ export default function FlowMap({ value, onChange, placeholder }: Props) {
         </div>
       </div>
 
-      <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/40">
-        <div className="h-[420px]">
-          <MapContainer
-            center={center}
-            zoom={zoom}
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-            ref={(r) => {
-              // react-leaflet v4 stores the Leaflet map at r
-              mapRef.current = (r as any) || null;
-            }}
-          >
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {value ? <Marker position={[value.lat, value.lon]} /> : null}
-          </MapContainer>
+      <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/60">
+        <div className="h-[420px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center">
+          {value ? (
+            <div className="text-center space-y-1">
+              <div className="text-sm text-zinc-400">Selected area</div>
+              <div className="text-lg font-semibold text-white">{value.displayName}</div>
+              <div className="text-xs text-zinc-500">
+                {value.lat.toFixed(4)}, {value.lon.toFixed(4)}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-zinc-500">Map preview loads after a search.</div>
+          )}
         </div>
       </div>
     </div>

@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Search, MapPin, Loader2, X, Clock, Trash2 } from 'lucide-react'
-import toast from 'react-hot-toast'
+
+const toast = {
+  success: (message: string) => (typeof window !== 'undefined' ? console.info(message) : undefined),
+  error: (message: string) => (typeof window !== 'undefined' ? console.error(message) : undefined)
+}
 
 interface AddressResult {
   formattedAddress: string

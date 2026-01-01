@@ -55,6 +55,18 @@ export default function CampaignPage() {
   const [importPct, setImportPct] = useState(0);
   const [importNote, setImportNote] = useState<string | null>(null);
 
+  async function downloadFile(path: string, filename: string, auth?: boolean) {
+    const blob = await apiDownload(path, { auth });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+  }
+
   async function load() {
     setErr(null);
     try {
@@ -102,7 +114,7 @@ export default function CampaignPage() {
         method: "POST",
         auth: true,
         query: { campaign_id: campaignId },
-        body: leadForm,
+        json: leadForm,
       });
       setLeadForm({ address: "", city: "", state: "", zip_code: "", owner_name: "", phone: "" });
       await load();
@@ -151,9 +163,9 @@ export default function CampaignPage() {
     try {
       const res = await apiFetch<{ filename: string; download_url: string }>(
         `/exports/campaigns/${campaignId}/leads-by-zip`,
-        { method: "POST", auth: true, body: {} }
+        { method: "POST", auth: true, json: {} }
       );
-      await apiDownload(res.download_url, res.filename, true);
+      await downloadFile(res.download_url, res.filename, true);
     } catch (e: any) {
       setErr(e.message || "Export failed");
     } finally {
@@ -169,7 +181,7 @@ export default function CampaignPage() {
       const res = await apiFetch(`/campaigns/${campaignId}/populate`, {
         method: "POST",
         auth: true,
-        body: { provider: popProvider, zipcode: popZip.trim() || null, limit: popLimit },
+        json: { provider: popProvider, zipcode: popZip.trim() || null, limit: popLimit },
       });
       setPopResult(res);
       await load();
@@ -238,7 +250,7 @@ export default function CampaignPage() {
           method: "POST",
           auth: true,
           query: { campaign_id: campaignId },
-          body,
+          json: body,
         });
         created++;
         setImportPct(Math.round(((i + 1) / total) * 100));

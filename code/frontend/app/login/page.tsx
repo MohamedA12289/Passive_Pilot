@@ -7,7 +7,7 @@ import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { getToken, setToken } from "@/lib/storage";
-import { apiBase } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 type Token = { access_token: string; token_type: string };
 
@@ -28,16 +28,11 @@ export default function LoginPage() {
     setErr(null);
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase()}/auth/login`, {
+      const data = await apiFetch<Token>("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username: email, password }),
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.detail || `HTTP ${res.status}`);
-      }
-      const data = (await res.json()) as Token;
       setToken(data.access_token);
       router.push("/dashboard");
     } catch (e: any) {
