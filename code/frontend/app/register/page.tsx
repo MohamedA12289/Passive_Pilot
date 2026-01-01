@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { getSession, isEmailVerified, signUp } from "@/lib/supabase/auth";
+import { getSession, isEmailVerified, signUp, isSupabaseConfigured } from "@/lib/supabase/auth";
 
 function getPasswordError(pw: string): string | null {
   if (/\s/.test(pw)) return "Password must have no white space";
@@ -31,19 +31,32 @@ export default function RegisterPage() {
       try {
         const session = await getSession();
         if (session && isEmailVerified(session.user ?? null)) router.push("/dashboard");
-      } catch (e) {
+      } catch {
         // ignore
       }
     })();
   }, [router]);
+
+  // If Supabase isn't configured, show a clear message
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+    }
+  }, []);
 
   const passwordError = useMemo(() => getPasswordError(password), [password]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    setMessage(null);
 
-    // Frontend guardrail (same rules as backend)
+    if (!isSupabaseConfigured()) {
+      setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      return;
+    }
+
+    // Frontend guardrail
     const pwErr = getPasswordError(password);
     if (pwErr) {
       setErr(pwErr);
@@ -53,6 +66,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await signUp(email, password);
+      setPassword("");
       setMessage("Check your email to verify your account, then log in.");
     } catch (e: any) {
       setErr(e?.message || "Registration failed");
@@ -80,6 +94,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@email.com"
+            required
           />
 
           <div>
@@ -89,16 +104,23 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
+              required
             />
-            {passwordError ? (
-              <div className="mt-1 text-xs text-red-400">{passwordError}</div>
-            ) : null}
+            {passwordError ? <div className="mt-1 text-xs text-red-400">{passwordError}</div> : null}
           </div>
 
-          <Button variant="primary" disabled={loading} className="w-full">
+          <Button variant="primary" disabled={loading} className="w-full" type="submit">
             {loading ? "Creating..." : "Create account"}
           </Button>
         </form>
+
+        {message ? (
+          <div className="mt-4">
+            <Button className="w-full" onClick={() => router.push("/login")}>
+              Go to login
+            </Button>
+          </div>
+        ) : null}
 
         <div className="mt-5 text-sm text-zinc-400">
           Already have an account?{" "}
