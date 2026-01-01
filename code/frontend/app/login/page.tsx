@@ -28,7 +28,7 @@ export default function LoginPage() {
     }
   }, [searchParams]);
 
-  // If already authenticated, bounce to dashboard
+  // If already authenticated via Supabase, bounce to dashboard
   useEffect(() => {
     (async () => {
       try {
