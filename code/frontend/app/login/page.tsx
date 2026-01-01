@@ -3,24 +3,42 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { getToken, setToken } from "@/lib/storage";
-import { apiFetch } from "@/lib/api";
-
-type Token = { access_token: string; token_type: string };
+import { getSession, isEmailVerified, signIn, signOut } from "@/lib/supabase/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const t = getToken();
-    if (t) router.push("/dashboard");
+    (async () => {
+      const msg = searchParams.get("message");
+      if (msg) setErr(msg);
+    })();
+  }, [searchParams]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const session = await getSession();
+        if (!session) return;
+        if (!isEmailVerified(session.user ?? null)) {
+          setErr("Please verify your email before continuing.");
+          await signOut().catch(() => undefined);
+          return;
+        }
+        router.push("/dashboard");
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, [router]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -28,12 +46,13 @@ export default function LoginPage() {
     setErr(null);
     setLoading(true);
     try {
-      const data = await apiFetch<Token>("/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username: email, password }),
-      });
-      setToken(data.access_token);
+      const { session, user } = await signIn(email, password);
+      const authedUser = session?.user ?? user ?? null;
+      if (!isEmailVerified(authedUser)) {
+        await signOut().catch(() => undefined);
+        setErr("Please verify your email before signing in.");
+        return;
+      }
       router.push("/dashboard");
     } catch (e: any) {
       setErr(e.message || "Login failed");

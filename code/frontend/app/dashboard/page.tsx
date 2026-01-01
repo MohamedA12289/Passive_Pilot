@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Bell, ChevronRight, Home, MapPin, Shield, SlidersHorizontal, Users } from "lucide-react";
 
 import FlowStepper from "@/components/dashboard/FlowStepper";
@@ -79,7 +80,8 @@ export default function Page() {
   }, [selectedId]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-amber-50">
+    <RequireAuth>
+      <div className="relative min-h-screen bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-amber-50">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.15),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(251,191,36,0.08),transparent_30%),radial-gradient(circle_at_30%_70%,rgba(251,191,36,0.12),transparent_40%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02)_40%,rgba(0,0,0,0.2))]" />
 
@@ -191,6 +193,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </RequireAuth>
   );
 }

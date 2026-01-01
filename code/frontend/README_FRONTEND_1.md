@@ -25,3 +25,10 @@ Frontend runs on:
 
 Make sure backend is running on:
 - http://127.0.0.1:8000
+
+## Auth + Supabase
+- Environment variables (see `.env.local.example`):
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `NEXT_PUBLIC_API_BASE` (existing backend API)
+- Users must verify their email after signing up before they can access the dashboard or campaigns.

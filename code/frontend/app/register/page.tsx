@@ -6,8 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/storage";
+import { getSession, isEmailVerified, signUp } from "@/lib/supabase/auth";
 
 function getPasswordError(pw: string): string | null {
   if (/\s/.test(pw)) return "Password must have no white space";
@@ -23,12 +22,19 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
 
   const [err, setErr] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // If already logged in, bounce
   useEffect(() => {
-    const t = getToken();
-    if (t) router.push("/dashboard");
+    (async () => {
+      try {
+        const session = await getSession();
+        if (session && isEmailVerified(session.user ?? null)) router.push("/dashboard");
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, [router]);
 
   const passwordError = useMemo(() => getPasswordError(password), [password]);
@@ -46,12 +52,8 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await apiFetch("/auth/register", {
-        method: "POST",
-        json: { email, password },
-      });
-
-      router.push("/login");
+      await signUp(email, password);
+      setMessage("Check your email to verify your account, then log in.");
     } catch (e: any) {
       setErr(e?.message || "Registration failed");
     } finally {
@@ -70,6 +72,7 @@ export default function RegisterPage() {
         <p className="text-sm text-zinc-400 mb-6">Register, then log in.</p>
 
         {err ? <div className="mb-4 text-sm text-red-400">{err}</div> : null}
+        {message ? <div className="mb-4 text-sm text-emerald-400">{message}</div> : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <Input
