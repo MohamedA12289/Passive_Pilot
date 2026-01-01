@@ -56,7 +56,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // Frontend guardrail
     const pwErr = getPasswordError(password);
     if (pwErr) {
       setErr(pwErr);
