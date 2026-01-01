@@ -48,7 +48,7 @@ export default function RegisterPage() {
     try {
       await apiFetch("/auth/register", {
         method: "POST",
-        body: { email, password },
+        json: { email, password },
       });
 
       router.push("/login");

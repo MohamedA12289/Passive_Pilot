@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2022",
     "lib": [
       "dom",
@@ -25,7 +26,36 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@radix-ui/react-alert-dialog": ["./lib/radix-stub"],
+      "@radix-ui/react-aspect-ratio": ["./lib/radix-stub"],
+      "@radix-ui/react-avatar": ["./lib/radix-stub"],
+      "@radix-ui/react-checkbox": ["./lib/radix-stub"],
+      "@radix-ui/react-collapsible": ["./lib/radix-stub"],
+      "@radix-ui/react-context-menu": ["./lib/radix-stub"],
+      "@radix-ui/react-hover-card": ["./lib/radix-stub"],
+      "@radix-ui/react-menubar": ["./lib/radix-stub"],
+      "@radix-ui/react-navigation-menu": ["./lib/radix-stub"],
+      "@radix-ui/react-progress": ["./lib/radix-stub"],
+      "@radix-ui/react-radio-group": ["./lib/radix-stub"],
+      "@radix-ui/react-scroll-area": ["./lib/radix-stub"],
+      "@radix-ui/react-select": ["./lib/radix-stub"],
+      "@radix-ui/react-slider": ["./lib/radix-stub"],
+      "@radix-ui/react-switch": ["./lib/radix-stub"],
+      "@radix-ui/react-toggle-group": ["./lib/radix-stub"],
+      "@radix-ui/react-toggle": ["./lib/radix-stub"],
+      "@radix-ui/react-label": ["./lib/radix-stub"],
+      "react-day-picker": ["./lib/day-picker-stub"],
+      "embla-carousel-react": ["./lib/embla-stub"],
+      "cmdk": ["./lib/cmdk-stub"],
+      "react-hot-toast": ["./lib/toast-stub"],
+      "jspdf": ["./lib/jspdf-stub"],
+      "date-fns": ["./lib/date-fns-stub"],
+      "react-hook-form": ["./lib/react-hook-form-stub"],
+      "vaul": ["./lib/vaul-stub"],
+      "input-otp": ["./lib/input-otp-stub"],
+      "react-resizable-panels": ["./lib/resizable-panels-stub"],
+      "sonner": ["./lib/sonner-stub"]
     }
   },
   "include": [
