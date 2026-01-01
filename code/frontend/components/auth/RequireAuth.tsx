@@ -23,8 +23,6 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
       router.replace(`/login?${params.toString()}`);
     }
 
-    // If Supabase isn't configured, don't hard-crash the app.
-    // Just send user to login with a clear message.
     if (!isSupabaseConfigured()) {
       redirect("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
       return;
