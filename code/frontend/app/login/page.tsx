@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -5,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Brand } from "@/components/Brand";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-
 import { getSession, isEmailVerified, signIn, signOut, isSupabaseConfigured } from "@/lib/supabase/auth";
 
 export default function LoginPage() {
@@ -18,19 +19,16 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Read message param (from RequireAuth redirects), and also protect against missing Supabase config
   useEffect(() => {
     const msg = searchParams.get("message");
     if (msg) setErr(msg);
 
     if (!isSupabaseConfigured()) {
-      setErr(
-        "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
-      );
+      setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
     }
   }, [searchParams]);
 
-  // If already authenticated via Supabase, bounce to dashboard
+  // If already authenticated, bounce to dashboard
   useEffect(() => {
     (async () => {
       try {
@@ -57,9 +55,7 @@ export default function LoginPage() {
 
     try {
       if (!isSupabaseConfigured()) {
-        setErr(
-          "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
-        );
+        setErr("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
         return;
       }
 
@@ -95,7 +91,9 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {err ? <div className="mt-6 rounded-md bg-red-950/40 px-4 py-3 text-sm text-red-200">{err}</div> : null}
+        {err ? (
+          <div className="mt-6 rounded-md bg-red-950/40 px-4 py-3 text-sm text-red-200">{err}</div>
+        ) : null}
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <Input
