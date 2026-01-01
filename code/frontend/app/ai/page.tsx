@@ -88,7 +88,7 @@ export default function AIPage() {
       const res = await apiFetch<{ message: string }>("/ai/generate-sms", {
         method: "POST",
         auth: true,
-        body: {
+        json: {
           persona,
           goal,
           lead: {

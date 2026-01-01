@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import AnalysisCard from "@/components/analysis/AnalysisCard";
-import { deleteAnalysis, listAnalyses, newId, upsertAnalysis } from "@/components/analysis/analysisStore";
+import AnalysisCard from "@/frontend/components/analysis/AnalysisCard";
+import { deleteAnalysis, listAnalyses, newId, upsertAnalysis } from "@/frontend/components/analysis/analysisStore";
 
 function safeJsonParse(raw: string): { ok: boolean; value?: any; error?: string } {
   const t = raw.trim();

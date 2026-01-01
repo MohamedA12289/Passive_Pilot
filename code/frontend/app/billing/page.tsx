@@ -31,7 +31,7 @@ export default function BillingPage() {
     setBusy(true);
     setErr(null);
     try {
-      const res = await apiFetch<Checkout>("/billing/checkout-session", { method: "POST", auth: true, body: {} });
+      const res = await apiFetch<Checkout>("/billing/checkout-session", { method: "POST", auth: true, json: {} });
       window.location.href = res.url;
     } catch (e: any) {
       setErr(e.message || "Checkout failed");

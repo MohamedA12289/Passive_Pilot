@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import DealCard from "@/components/deals/DealCard";
-import DealTable from "@/components/deals/DealTable";
-import { deleteDeal, listDeals, seedDealsIfEmpty, upsertDeal, type Deal, type DealStatus } from "@/components/deals/dealsStore";
+import DealCard from "@/frontend/components/deals/DealCard";
+import DealTable from "@/frontend/components/deals/DealTable";
+import { deleteDeal, listDeals, seedDealsIfEmpty, upsertDeal, type Deal, type DealStatus } from "@/frontend/components/deals/dealsStore";
 
 function makeId() {
   return `deal-${Math.floor(1000 + Math.random() * 9000)}`;
