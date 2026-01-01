@@ -1,59 +1,61 @@
 // code/frontend/lib/api.ts
 
-export const apiBase =
+export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
   process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ||
   "http://127.0.0.1:8000";
 
-export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return (
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("token") ||
-    localStorage.getItem("pp_token")
-  );
-}
-
 export type ApiOptions = RequestInit & {
   auth?: boolean;
   query?: Record<string, string | number | boolean | null | undefined>;
+  json?: any; // convenience: auto JSON.stringify + set content-type
 };
 
-function buildUrl(path: string, query?: ApiOptions["query"]): string {
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("access_token") || localStorage.getItem("token");
+}
+
+function buildUrl(path: string, query?: ApiOptions["query"]) {
   const base = path.startsWith("http")
     ? path
-    : `${apiBase}${path.startsWith("/") ? "" : "/"}${path}`;
+    : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
 
   if (!query) return base;
 
   const url = new URL(base);
   for (const [k, v] of Object.entries(query)) {
-    if (v === undefined || v === null) continue;
+    if (v === null || v === undefined) continue;
     url.searchParams.set(k, String(v));
   }
   return url.toString();
 }
 
-function withAuthHeaders(init: ApiOptions): RequestInit {
-  const headers = new Headers(init.headers || {});
+export async function apiFetch<T>(path: string, init: ApiOptions = {}): Promise<T> {
   const token = getAccessToken();
 
-  // Only set JSON header when body exists and Content-Type not set
-  if (init.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+  // headers
+  const headers = new Headers(init.headers || {});
+
+  // If user used `json`, convert to proper fetch body
+  let body = init.body;
+  if (init.json !== undefined && body === undefined) {
+    body = JSON.stringify(init.json);
+    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  } else {
+    // keep existing behavior: only set JSON content-type if body exists and no content-type set
+    if (!headers.has("Content-Type") && body) headers.set("Content-Type", "application/json");
   }
 
-  if (init.auth && token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+  if (init.auth && token) headers.set("Authorization", `Bearer ${token}`);
+  // If they don't pass auth:true but token exists, you can choose to keep old behavior.
+  // Right now: only attach if auth:true (safer + predictable).
+  // If you want always-on token, change this line.
 
-  const { auth: _auth, query: _query, ...rest } = init;
-  return { ...rest, headers };
-}
-
-export async function apiFetch<T>(path: string, init: ApiOptions = {}): Promise<T> {
   const url = buildUrl(path, init.query);
-  const res = await fetch(url, withAuthHeaders(init));
+
+  const { auth, query, json, ...rest } = init;
+  const res = await fetch(url, { ...rest, headers, body });
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -65,14 +67,19 @@ export async function apiFetch<T>(path: string, init: ApiOptions = {}): Promise<
   return (await res.json()) as T;
 }
 
+// Optional: if you still need download helper
 export async function apiDownload(path: string, init: ApiOptions = {}): Promise<Blob> {
-  const url = buildUrl(path, init.query);
-  const res = await fetch(url, withAuthHeaders(init));
+  const token = getAccessToken();
+  const headers = new Headers(init.headers || {});
+  if (init.auth && token) headers.set("Authorization", `Bearer ${token}`);
 
+  const url = buildUrl(path, init.query);
+  const { auth, query, json, ...rest } = init;
+
+  const res = await fetch(url, { ...rest, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`Download ${res.status}: ${text || res.statusText}`);
   }
-
   return await res.blob();
 }
