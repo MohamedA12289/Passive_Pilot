@@ -142,7 +142,7 @@ def _parse_attom_property(prop_data: dict[str, Any]) -> ProviderLead | None:
             line1 = address_data.get("line1", "")
             line2 = address_data.get("line2", "")
             full_address = f"{line1} {line2}".strip()
-        
+
         city = address_data.get("locality", "")
         state = address_data.get("countrySubd", "")
         zip_code = address_data.get("postal1", "")
@@ -151,57 +151,57 @@ def _parse_attom_property(prop_data: dict[str, Any]) -> ProviderLead | None:
         building_data = prop_data.get("building", {}) or {}
         size_data = building_data.get("size", {}) or {}
         rooms_data = building_data.get("rooms", {}) or {}
-        
+
         bedrooms = _safe_int(rooms_data.get("beds"))
         bathrooms = _safe_float(rooms_data.get("bathstotal"))
         sqft = _safe_int(size_data.get("universalsize"))
-        
+
         # Lot information
         lot_data = prop_data.get("lot", {}) or {}
         lot_size = _safe_int(lot_data.get("lotsize2"))  # sqft
         year_built = _safe_int(lot_data.get("yearbuilt"))
-        
+
         # Property type
         summary_data = prop_data.get("summary", {}) or {}
         property_type = summary_data.get("proptype", "")
-        
+
         # Financial data - Assessment
         assessment_data = prop_data.get("assessment", {}) or {}
         assessed_value = _safe_float(assessment_data.get("assessed", {}).get("assdttlvalue"))
-        
+
         # AVM (Automated Valuation Model) - estimated market value
         avm_data = prop_data.get("avm", {}) or {}
         estimated_value = _safe_float(avm_data.get("amount", {}).get("value"))
-        
+
         # If no AVM, use assessed value as estimate
         if not estimated_value and assessed_value:
             estimated_value = assessed_value * 1.1  # Rough market estimate
-        
+
         # Sale information
         sale_data = prop_data.get("sale", {}) or {}
         last_sale_amount = sale_data.get("amount", {}) or {}
         last_sale_price = _safe_float(last_sale_amount.get("saleamt"))
         last_sale_date = sale_data.get("saleTransDate", "")
-        
+
         # Owner information
         owner_data = prop_data.get("owner", {}) or {}
         owner_name = owner_data.get("owner1", {}).get("fullName", "")
         owner_occupied = owner_data.get("owneroccupied") == "Y"
         absentee_owner = owner_data.get("absenteeowner") == "Y"
-        
+
         # Mortgage/equity calculation
         mortgage_data = prop_data.get("mortgage", {}) or {}
         mortgage_amount = _safe_float(mortgage_data.get("amount"))
-        
+
         equity_percent = None
         if estimated_value and mortgage_amount:
             equity = estimated_value - mortgage_amount
             equity_percent = (equity / estimated_value) * 100 if estimated_value > 0 else 0
-        
+
         # Provider ID
         identifier = prop_data.get("identifier", {}) or {}
         provider_id = identifier.get("Id") or identifier.get("attomId") or ""
-        
+
         return ProviderLead(
             address=full_address or None,
             city=city or None,
@@ -279,35 +279,50 @@ class AttomProvider(LeadProvider):
 
         try:
             logger.info(f"Fetching ATTOM properties with params: {params}")
-            
+
             async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.get(url, headers=headers, params=params)
-                
+
                 if response.status_code == 401:
                     logger.error("ATTOM API authentication failed - check API key")
                     return []
                 elif response.status_code == 429:
-                    logger.error("ATTOM API rate limit exceeded")
+                    logger.error("ATTOM API rate limit exceeded - consider implementing retry logic with exponential backoff")
+                    return []
+                elif response.status_code == 404:
+                    logger.warning(f"ATTOM API endpoint not found: {url}")
+                    return []
+                elif response.status_code >= 500:
+                    logger.error(f"ATTOM API server error: {response.status_code}")
                     return []
                 elif response.status_code >= 400:
-                    logger.error(f"ATTOM API error: {response.status_code} - {response.text}")
+                    logger.error(f"ATTOM API client error: {response.status_code} - {response.text[:500]}")
                     return []
 
-                data = response.json()
-                
+                # Parse JSON response with error handling
+                try:
+                    data = response.json()
+                except ValueError as e:
+                    logger.error(f"Invalid JSON response from ATTOM API: {e}")
+                    return []
+
+                if not isinstance(data, dict):
+                    logger.error("ATTOM API returned non-dict response")
+                    return []
+
                 # ATTOM typically returns results in a 'property' array
                 properties = data.get("property", [])
                 if not properties:
                     logger.info("No properties returned from ATTOM")
                     return []
-                
+
                 # Parse each property into ProviderLead
                 leads: list[ProviderLead] = []
                 for prop in properties:
                     lead = _parse_attom_property(prop)
                     if lead:
                         leads.append(lead)
-                
+
                 logger.info(f"Successfully parsed {len(leads)} properties from ATTOM")
                 return leads
 

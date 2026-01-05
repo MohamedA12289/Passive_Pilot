@@ -72,8 +72,47 @@ def _bootstrap_admin():
         db.close()
 
 
+def _validate_critical_config():
+    """
+    Validate critical configuration at startup.
+    Warns for missing optional configs, raises for critical ones.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Critical configs (app won't work without these)
+    if not settings.SECRET_KEY or settings.SECRET_KEY == "CHANGE_ME_TO_A_LONG_RANDOM_STRING":
+        logger.error("SECRET_KEY is not set or using default value! This is a security risk.")
+        logger.error("Set a strong random SECRET_KEY in your .env file")
+        raise ValueError("SECRET_KEY must be configured with a secure random value")
+
+    if not settings.DATABASE_URL:
+        logger.error("DATABASE_URL is not set!")
+        raise ValueError("DATABASE_URL must be configured")
+
+    # Optional but important configs
+    warnings = []
+    if not settings.ATTOM_API_KEY:
+        warnings.append("ATTOM_API_KEY not set - ATTOM property data provider will not work")
+
+    if not settings.STRIPE_SECRET_KEY:
+        warnings.append("STRIPE_SECRET_KEY not set - billing features will not work")
+
+    if not settings.OPENAI_API_KEY:
+        warnings.append("OPENAI_API_KEY not set - AI features will not work")
+
+    # Log warnings
+    if warnings:
+        logger.warning("Configuration warnings:")
+        for w in warnings:
+            logger.warning(f"  - {w}")
+
+    logger.info("Configuration validation complete")
+
+
 @app.on_event("startup")
 def on_startup():
+    _validate_critical_config()
     init_db()
     _bootstrap_admin()
 
