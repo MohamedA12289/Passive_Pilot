@@ -18,8 +18,21 @@ def _safe_count(db: Session, table_name: str) -> int:
     """
     Counts rows from a table name safely.
     Returns 0 if the table doesn't exist yet (keeps dev smooth).
+
+    Note: Uses whitelist to prevent SQL injection
     """
+    # Whitelist of allowed table names to prevent SQL injection
+    ALLOWED_TABLES = {
+        "users", "campaigns", "leads", "deals",
+        "export_jobs", "audit_events", "subscriptions",
+        "app_control", "deal_events"
+    }
+
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Table name '{table_name}' not in allowed list")
+
     try:
+        # Safe to use f-string now since we validated against whitelist
         return int(db.execute(text(f"SELECT COUNT(*) FROM {table_name}")).scalar() or 0)
     except Exception:
         return 0
