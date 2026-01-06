@@ -1,5 +1,7 @@
 // code/frontend/lib/api.ts
 
+import type { Deal, DealAnalysis, Campaign, DashboardStats, Property } from './types';
+
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
   process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ||
@@ -82,4 +84,101 @@ export async function apiDownload(path: string, init: ApiOptions = {}): Promise<
     throw new Error(`Download ${res.status}: ${text || res.statusText}`);
   }
   return await res.blob();
+}
+
+// Dashboard API functions
+
+/**
+ * Fetch all deals
+ */
+export async function fetchDeals(): Promise<Deal[]> {
+  try {
+    return await apiFetch<Deal[]>('/api/deals', { auth: true });
+  } catch (error) {
+    console.error('Error fetching deals:', error);
+    // Return mock data for development
+    return [];
+  }
+}
+
+/**
+ * Fetch a single deal by ID
+ */
+export async function fetchDeal(id: string): Promise<Deal> {
+  try {
+    return await apiFetch<Deal>(`/api/deals/${id}`, { auth: true });
+  } catch (error) {
+    console.error(`Error fetching deal ${id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Analyze a deal
+ */
+export async function analyzeDeal(payload: {
+  dealId: string;
+  [key: string]: unknown;
+}): Promise<DealAnalysis> {
+  try {
+    return await apiFetch<DealAnalysis>('/api/deals/analyze', {
+      method: 'POST',
+      auth: true,
+      json: payload,
+    });
+  } catch (error) {
+    console.error('Error analyzing deal:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch all campaigns
+ */
+export async function fetchCampaigns(): Promise<Campaign[]> {
+  try {
+    return await apiFetch<Campaign[]>('/api/campaigns', { auth: true });
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch dashboard stats
+ */
+export async function fetchDashboardStats(): Promise<DashboardStats> {
+  try {
+    return await apiFetch<DashboardStats>('/api/dashboard/stats', { auth: true });
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    // Return default stats
+    return {
+      dealCountVerified: 0,
+      assignmentReceived: 0,
+      slipPerFixer: 0,
+    };
+  }
+}
+
+/**
+ * Search properties
+ */
+export async function searchProperties(filters?: {
+  city?: string;
+  state?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minBeds?: number;
+  minBaths?: number;
+}): Promise<Property[]> {
+  try {
+    return await apiFetch<Property[]>('/api/properties/search', {
+      auth: true,
+      query: filters as Record<string, string | number | boolean>,
+    });
+  } catch (error) {
+    console.error('Error searching properties:', error);
+    return [];
+  }
 }
