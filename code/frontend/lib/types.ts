@@ -64,3 +64,108 @@ export interface SavedAnalysis {
   date: string
   confidence: 'high' | 'medium' | 'low'
 }
+
+// Dashboard types
+export interface Property {
+  id: string
+  address: string
+  city?: string
+  state?: string
+  zipCode?: string
+  ownerName?: string
+  price: number
+  beds: number
+  baths: number
+  sqft: number
+  lotSize?: number
+  yearBuilt?: number
+  imageUrl?: string
+  latitude?: number
+  longitude?: number
+  discount?: number
+  status?: 'active' | 'pending' | 'sold'
+}
+
+export interface Deal {
+  id: string
+  property: Property
+  arv: number
+  discount: number
+  dealScore?: number
+  assignmentFee?: number
+  disposeAgent?: string
+  estimationDate?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DealAnalysis {
+  deal: Deal
+  arv: number
+  arvPerSqft?: number
+  assignmentFee: number
+  assignmentFeeToggle?: boolean
+  disposeAgent: string
+  disposeAgentToggle?: boolean
+  dealScore: number
+  estimations: {
+    repairCost?: number
+    holdingCost?: number
+    closingCost?: number
+    [key: string]: number | undefined
+  }
+  propertyMetadata: {
+    yearBuilt?: number
+    lotSize?: number
+    sqft?: number
+    beds?: number
+    baths?: number
+    county?: string
+    parcelNumber?: string
+    [key: string]: string | number | undefined
+  }
+}
+
+export interface Campaign {
+  id: string
+  name: string
+  status: 'active' | 'paused' | 'completed'
+  targetCount: number
+  sentCount: number
+  responseRate?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DashboardStats {
+  dealCountVerified: number
+  assignmentReceived: number
+  slipPerFixer: number
+}
+
+export interface MapMarker {
+  id: string
+  latitude: number
+  longitude: number
+  property?: Property
+  deal?: Deal
+}
+
+export interface PropertySearchFilters {
+  minPrice?: number
+  maxPrice?: number
+  minBeds?: number
+  minBaths?: number
+  minSqft?: number
+  maxSqft?: number
+  city?: string
+  state?: string
+  zipCode?: string
+}
+
+export interface ToolLink {
+  id: string
+  name: string
+  route: string
+  icon?: string
+}
