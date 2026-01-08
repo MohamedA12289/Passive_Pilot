@@ -17,6 +17,7 @@ from app.routers import dev_tools
 from app.routers import admin_audit
 from app.routers import dev_audit
 from app.routers import campaign_filters
+from app.routers import buyer_profile
 
 try:
     from app.routers import admin_stats
@@ -254,6 +255,7 @@ app.include_router(leads.router, prefix="/leads", tags=["leads"])
 app.include_router(providers.router, prefix="/providers", tags=["providers"])
 app.include_router(exports.router, prefix="/exports", tags=["exports"])
 app.include_router(deals.router, prefix="/deals", tags=["deals"])
+app.include_router(buyer_profile.router, prefix="/buyer-profile", tags=["buyer-profile"])
 
 # Admin (dev can access admin endpoints because require_roles expands admin->dev)
 app.include_router(admin.router, prefix="/admin", tags=["admin"])

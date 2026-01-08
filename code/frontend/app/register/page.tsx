@@ -20,6 +20,7 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"buyer" | "wholesaler">("wholesaler");
 
   const [err, setErr] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -64,11 +65,12 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await signUp(email, password);
+      await signUp(email, password, role);
       setPassword("");
       setMessage("Check your email to verify your account, then log in.");
-    } catch (e: any) {
-      setErr(e?.message || "Registration failed");
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : "Registration failed";
+      setErr(errMsg);
     } finally {
       setLoading(false);
     }
@@ -106,6 +108,18 @@ export default function RegisterPage() {
               required
             />
             {passwordError ? <div className="mt-1 text-xs text-red-400">{passwordError}</div> : null}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">I am a</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as "buyer" | "wholesaler")}
+              className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
+            >
+              <option value="wholesaler">Wholesaler</option>
+              <option value="buyer">Buyer</option>
+            </select>
           </div>
 
           <Button variant="primary" disabled={loading} className="w-full" type="submit">

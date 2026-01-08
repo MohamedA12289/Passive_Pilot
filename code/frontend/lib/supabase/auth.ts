@@ -19,10 +19,14 @@ function isUserVerified(user: User | null): boolean {
   );
 }
 
-export async function signUp(email: string, password: string) {
+export async function signUp(email: string, password: string, role: string = "wholesaler") {
   const sb = requireSupabase();
   const { error } = await sb.auth.signUp({ email, password });
   if (error) throw new Error(error.message || "Sign up failed");
+  // Store selected role for later use during backend registration
+  if (typeof window !== "undefined") {
+    localStorage.setItem("signup_role", role);
+  }
 }
 
 export async function signIn(email: string, password: string) {
