@@ -18,13 +18,16 @@ router = APIRouter()
 def register(payload: UserCreate, db: Session = Depends(get_db)):
     if not settings.ALLOW_REGISTER:
         raise HTTPException(status_code=403, detail="Registration is disabled")
+    # Security: reject admin/dev roles even if frontend is hacked
+    if payload.role not in {"buyer", "wholesaler"}:
+        raise HTTPException(status_code=400, detail="Invalid role")
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(
         email=payload.email,
         hashed_password=get_password_hash(payload.password),
-        role=ROLE_CLIENT,
+        role=payload.role,
         is_active=True,
     )
     db.add(user)

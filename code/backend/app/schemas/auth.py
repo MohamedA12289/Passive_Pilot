@@ -23,6 +23,7 @@ ALLOWED_EMAIL_DOMAINS = {
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = PASSWORD_RULES
+    role: str = Field(default="wholesaler", pattern=r"^(buyer|wholesaler)$")
 
     @field_validator("email")
     @classmethod
@@ -37,6 +38,14 @@ class UserCreate(BaseModel):
         if domain not in ALLOWED_EMAIL_DOMAINS:
             raise ValueError("Please use a valid email")
 
+        return v
+
+    @field_validator("role")
+    @classmethod
+    def role_must_be_allowed(cls, v: str) -> str:
+        allowed = {"buyer", "wholesaler"}
+        if v not in allowed:
+            raise ValueError("Role must be buyer or wholesaler")
         return v
 
 
