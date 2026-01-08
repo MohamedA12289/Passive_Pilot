@@ -26,7 +26,7 @@ export default function Navigation() {
   const items: NavItem[] = [
     { name: "Home", url: "/", icon: Home },
     { name: "Analyzer", url: "/analyzer", icon: Calculator },
-    { name: "Pipeline", url: "/tools/deal-pipeline", icon: TrendingUp },
+    { name: "Dashboard", url: "/tools/deal-pipeline", icon: TrendingUp },
     { name: "Tools", url: "/tools", icon: Wrench },
     { name: "Pricing", url: "/pricing", icon: DollarSign },
     { name: "How It Works", url: "/how-it-works", icon: HelpCircle },

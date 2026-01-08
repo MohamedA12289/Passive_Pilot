@@ -169,3 +169,48 @@ export interface ToolLink {
   route: string
   icon?: string
 }
+
+// Lightning Leads types
+export interface LeadProperty {
+  id: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  beds: number
+  baths: number
+  sqft: number
+  listPrice: number
+  balance: number
+  offerPrice: number
+  piti: number
+  rent: number
+  equityPercent: number
+  interestRate: number
+  monthlyCashflow: number
+  latitude: number
+  longitude: number
+  images: string[]
+  onMarket: boolean
+  mortgageTakeover: boolean
+  propertyType: string
+  dealType: string
+  zillowUrl?: string
+  inDashboard: boolean
+  agentName?: string
+  agentPhone?: string
+  agentEmail?: string
+}
+
+export interface LeadsFilters {
+  location?: string
+  onMarket?: string
+  propertyType?: string
+  dealType?: string
+  priceMin?: number
+  priceMax?: number
+  bedsMin?: number
+  bedsMax?: number
+  bathsMin?: number
+  bathsMax?: number
+}

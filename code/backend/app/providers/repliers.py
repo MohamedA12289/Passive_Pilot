@@ -1,4 +1,3 @@
-@'
 from __future__ import annotations
 
 from typing import Any
@@ -227,4 +226,3 @@ class RepliersProvider(LeadProvider):
 
         except Exception:
             return []
-'@ | Set-Content -Encoding utf8 "code\backend\app\providers\repliers.py"
