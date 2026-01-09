@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Map as MapIcon, List } from "lucide-react";
 import DashboardTopNav from "@/components/leads/DashboardTopNav";
 import LeadsFiltersBar from "@/components/leads/LeadsFiltersBar";
 import LeadsMapPanel from "@/components/leads/LeadsMapPanel";
 import LeadPropertyCard from "@/components/leads/LeadPropertyCard";
 import CreateOfferModal from "@/components/leads/CreateOfferModal";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import type { LeadProperty, LeadsFilters } from "@/lib/types";
 
 // Mock data for demo
@@ -101,6 +102,8 @@ const MOCK_PROPERTIES: LeadProperty[] = [
 ];
 
 export default function LeadsPage() {
+  const isMobile = useIsMobile();
+  const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [filters, setFilters] = useState<LeadsFilters>({});
   const [properties, setProperties] = useState<LeadProperty[]>(MOCK_PROPERTIES);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
@@ -208,71 +211,109 @@ export default function LeadsPage() {
           onSearch={handleSearch}
         />
 
+        {/* Mobile: Map/List Toggle Tabs */}
+        {isMobile && (
+          <div className="px-3 pb-3">
+            <div className="flex items-center gap-2 bg-[#1a1a1a]/80 border border-[#333333] rounded-full p-1">
+              <button
+                onClick={() => setMobileView("list")}
+                className={`
+                  flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 min-h-[44px]
+                  ${mobileView === "list"
+                    ? "bg-gradient-to-r from-gold-500/20 to-gold-600/10 text-gold-400 shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                    : "text-gray-400 hover:text-white"
+                  }
+                `}
+              >
+                <List size={18} />
+                <span>List ({properties.length})</span>
+              </button>
+              <button
+                onClick={() => setMobileView("map")}
+                className={`
+                  flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 min-h-[44px]
+                  ${mobileView === "map"
+                    ? "bg-gradient-to-r from-gold-500/20 to-gold-600/10 text-gold-400 shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                    : "text-gray-400 hover:text-white"
+                  }
+                `}
+              >
+                <MapIcon size={18} />
+                <span>Map</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Split View */}
-        <div className="flex flex-col lg:flex-row gap-4 px-4 pb-4 h-[calc(100vh-180px)]">
-          {/* Left: Map */}
-          <div className="w-full lg:w-[40%] h-[300px] lg:h-full">
-            <LeadsMapPanel
-              properties={properties}
-              selectedPropertyId={selectedPropertyId}
-              onPropertySelect={handlePropertySelect}
-              className="w-full h-full"
-            />
-          </div>
+        <div className="flex flex-col lg:flex-row gap-4 px-3 md:px-4 pb-4 h-[calc(100vh-240px)] md:h-[calc(100vh-180px)]">
+          {/* Left: Map - Desktop always visible, Mobile conditional */}
+          {(!isMobile || mobileView === "map") && (
+            <div className={`w-full ${isMobile ? "h-[50vh]" : "lg:w-[40%] h-[300px] lg:h-full"}`}>
+              <LeadsMapPanel
+                properties={properties}
+                selectedPropertyId={selectedPropertyId}
+                onPropertySelect={handlePropertySelect}
+                className="w-full h-full"
+              />
+            </div>
+          )}
 
-          {/* Right: Results */}
-          <div className="w-full lg:w-[60%] flex flex-col h-full">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-4 px-2">
-              <div>
-                <span className="text-lg font-semibold text-white">{properties.length} Results</span>
-                <span className="text-sm text-gray-400 ml-2">
-                  Showing 1-{Math.min(10, properties.length)} of {properties.length}
-                </span>
+          {/* Right: Results - Desktop always visible, Mobile conditional */}
+          {(!isMobile || mobileView === "list") && (
+            <div className={`w-full ${isMobile ? "flex-1" : "lg:w-[60%]"} flex flex-col h-full`}>
+              {/* Results Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-2">
+                <div>
+                  <span className="text-base md:text-lg font-semibold text-white">{properties.length} Results</span>
+                  <span className="text-xs md:text-sm text-gray-400 ml-2">
+                    Showing 1-{Math.min(10, properties.length)} of {properties.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs md:text-sm text-gray-400">Sort by</span>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="appearance-none bg-[#1a1a1a] border border-[#333333] text-gray-300 text-xs md:text-sm rounded-lg px-3 md:px-4 py-2 pr-8 cursor-pointer hover:border-gold-500/50 transition-colors min-h-[44px] md:min-h-0"
+                    >
+                      <option value="default">Default</option>
+                      <option value="price_asc">Price: Low to High</option>
+                      <option value="price_desc">Price: High to Low</option>
+                      <option value="cashflow">Best Cashflow</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Sort by</span>
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-[#1a1a1a] border border-[#333333] text-gray-300 text-sm rounded-lg px-4 py-2 pr-8 cursor-pointer hover:border-gold-500/50 transition-colors"
+
+              {/* Property Cards */}
+              <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 pr-2 custom-scrollbar">
+                {sortedProperties.map((property) => (
+                  <div
+                    key={property.id}
+                    ref={(el) => { cardRefs.current[property.id] = el; }}
                   >
-                    <option value="default">Default</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                    <option value="cashflow">Best Cashflow</option>
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                </div>
+                    <LeadPropertyCard
+                      property={property}
+                      isSelected={selectedPropertyId === property.id}
+                      onSelect={() => setSelectedPropertyId(property.id)}
+                      onCreateOffer={() => setOfferModalProperty(property)}
+                      onToggleDashboard={() => handleToggleDashboard(property.id)}
+                    />
+                  </div>
+                ))}
+
+                {sortedProperties.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-64 text-center">
+                    <p className="text-base md:text-lg text-gray-400">No properties found</p>
+                    <p className="text-xs md:text-sm text-gray-500 mt-2">Try adjusting your filters</p>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Property Cards */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-              {sortedProperties.map((property) => (
-                <div
-                  key={property.id}
-                  ref={(el) => { cardRefs.current[property.id] = el; }}
-                >
-                  <LeadPropertyCard
-                    property={property}
-                    isSelected={selectedPropertyId === property.id}
-                    onSelect={() => setSelectedPropertyId(property.id)}
-                    onCreateOffer={() => setOfferModalProperty(property)}
-                    onToggleDashboard={() => handleToggleDashboard(property.id)}
-                  />
-                </div>
-              ))}
-
-              {sortedProperties.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <p className="text-lg text-gray-400">No properties found</p>
-                  <p className="text-sm text-gray-500 mt-2">Try adjusting your filters</p>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </main>
 
