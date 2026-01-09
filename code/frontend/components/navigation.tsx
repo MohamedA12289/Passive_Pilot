@@ -72,9 +72,9 @@ export default function Navigation() {
             className="object-contain drop-shadow-lg group-hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] transition-all duration-500"
             priority
           />
-          {/* V2 Badge */}
+          {/* V3 Badge */}
           <div className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 bg-gradient-to-r from-amber-500 to-gold-600 text-black text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg">
-            V2
+            V3
           </div>
         </div>
         

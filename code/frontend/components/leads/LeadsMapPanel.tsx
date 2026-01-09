@@ -21,6 +21,7 @@ export default function LeadsMapPanel({
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const [mapLoaded, setMapLoaded] = useState(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -57,7 +58,7 @@ export default function LeadsMapPanel({
           clusterRadius: 50,
         });
 
-        // Cluster circles
+        // Cluster circles - Increased size for better mobile tap targets
         map.current.addLayer({
           id: "clusters",
           type: "circle",
@@ -65,7 +66,7 @@ export default function LeadsMapPanel({
           filter: ["has", "point_count"],
           paint: {
             "circle-color": "#d4af37",
-            "circle-radius": ["step", ["get", "point_count"], 20, 10, 30, 50, 40],
+            "circle-radius": ["step", ["get", "point_count"], 24, 10, 34, 50, 44],
             "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
           },
@@ -80,14 +81,14 @@ export default function LeadsMapPanel({
           layout: {
             "text-field": "{point_count_abbreviated}",
             "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-            "text-size": 12,
+            "text-size": 14,
           },
           paint: {
             "text-color": "#000000",
           },
         });
 
-        // Individual markers
+        // Individual markers - Increased size for better mobile tap targets
         map.current.addLayer({
           id: "unclustered-point",
           type: "circle",
@@ -95,7 +96,7 @@ export default function LeadsMapPanel({
           filter: ["!", ["has", "point_count"]],
           paint: {
             "circle-color": "#d4af37",
-            "circle-radius": 10,
+            "circle-radius": 12,
             "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
           },
@@ -155,6 +156,35 @@ export default function LeadsMapPanel({
       }
     };
   }, [MAPBOX_TOKEN]);
+
+  // Handle window resize and orientation changes for mobile
+  useEffect(() => {
+    if (!map.current) return;
+
+    const handleResize = () => {
+      // Debounce resize to avoid performance issues
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      
+      resizeTimeoutRef.current = setTimeout(() => {
+        if (map.current) {
+          map.current.resize();
+        }
+      }, 200);
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
+  }, [mapLoaded]);
 
   // Update markers when properties change
   useEffect(() => {
@@ -222,7 +252,8 @@ export default function LeadsMapPanel({
   return (
     <div
       ref={mapContainer}
-      className={`rounded-xl overflow-hidden ${className}`}
+      className={`rounded-xl overflow-hidden min-h-[300px] ${className}`}
+      style={{ minHeight: "300px" }}
     />
   );
 }

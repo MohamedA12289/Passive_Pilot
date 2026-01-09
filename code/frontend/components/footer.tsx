@@ -21,9 +21,9 @@ export default function Footer() {
                   fill
                   className="object-contain"
                 />
-                {/* V2 Badge */}
+                {/* V3 Badge */}
                 <div className="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-gold-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg">
-                  V2
+                  V3
                 </div>
               </div>
               <div className="flex flex-col">
