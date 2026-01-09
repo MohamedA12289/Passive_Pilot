@@ -26,4 +26,13 @@ def init_db():
     from app.models import audit_event  # noqa: F401
     from app.models import app_control  # noqa: F401
 
-    Base.metadata.create_all(bind=engine)
+    # Use Alembic for migrations in production. create_all() is a fallback for dev/test.
+    # Ignore "already exists" errors when Alembic has already created the schema.
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        # If Alembic migrations have already run, tables/indexes may already exist
+        if "already exists" in str(e).lower():
+            pass  # Expected when using Alembic migrations
+        else:
+            raise

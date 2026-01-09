@@ -14,7 +14,7 @@ interface NavTab {
 }
 
 const navTabs: NavTab[] = [
-  { name: "Dashboard", href: "/tools/deal-pipeline", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tutorials", href: "/free-training", icon: GraduationCap },
   { name: "Profile", href: "/settings", icon: UserCircle },
   { name: "Leads", href: "/dashboard/leads", icon: Zap },
