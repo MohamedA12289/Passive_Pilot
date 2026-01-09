@@ -52,6 +52,9 @@ class UserCreate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user_id: int | None = None
+    email: str | None = None
+    role: str | None = None
 
 
 class UserMe(BaseModel):
@@ -63,3 +66,23 @@ class UserMe(BaseModel):
 class ChangePasswordIn(BaseModel):
     current_password: str = Field(min_length=1, max_length=72, pattern=r"^\S+$")
     new_password: str = PASSWORD_RULES
+
+
+# --- Whoop + Password Linkage Schemas ---
+
+class SetCredentialsIn(BaseModel):
+    username: str = Field(min_length=3, max_length=30, pattern=r"^[a-zA-Z0-9_]+$")
+    password: str = Field(min_length=8, max_length=72, pattern=r"^\S+$")
+
+
+class LoginPasswordIn(BaseModel):
+    username: str = Field(min_length=1, max_length=30)
+    password: str = Field(min_length=1, max_length=72)
+
+
+class UserMeExtended(BaseModel):
+    id: int
+    email: EmailStr
+    role: str
+    username: str | None = None
+    needs_credentials: bool = True
