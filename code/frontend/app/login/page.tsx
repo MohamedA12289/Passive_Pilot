@@ -72,6 +72,17 @@ export default function LoginPage() {
         return;
       }
 
+      // Check if user needs to set credentials (username/password)
+      try {
+        const meData = await apiFetch<{ needs_credentials?: boolean }>("/auth/me");
+        if (meData.needs_credentials) {
+          router.push("/onboarding/credentials");
+          return;
+        }
+      } catch {
+        // If /auth/me fails, proceed to dashboard anyway
+      }
+
       router.push("/dashboard");
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Login failed";
