@@ -10,3 +10,6 @@ class User(Base):
     role = Column(String, nullable=False, default=ROLE_CLIENT)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    # Local credentials (Whoop + password linkage)
+    username = Column(String(30), unique=True, index=True, nullable=True)
+    password_hash = Column(String, nullable=True)
