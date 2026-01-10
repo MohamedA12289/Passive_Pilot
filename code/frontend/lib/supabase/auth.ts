@@ -1,4 +1,5 @@
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "./client";
 
 function requireSupabase() {

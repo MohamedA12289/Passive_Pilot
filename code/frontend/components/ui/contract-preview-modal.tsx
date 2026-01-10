@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Download, Copy, CheckCircle, FileText, Sparkles } from 'lucide-react';
+import { X, Download, Copy, CheckCircle, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface ContractPreviewModalProps {
@@ -37,7 +37,7 @@ export default function ContractPreviewModal({
       setCopied(true);
       toast.success('✅ Contract copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy');
     }
   };

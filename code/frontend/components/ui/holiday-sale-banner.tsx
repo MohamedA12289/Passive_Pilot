@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Gift, Clock, ChevronRight } from 'lucide-react';
+import { X, Gift, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HolidaySaleBanner() {

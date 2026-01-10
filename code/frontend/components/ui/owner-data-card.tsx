@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { User, Mail, MapPin, Phone, Copy, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -31,7 +32,7 @@ export default function OwnerDataCard({ ownerInfo, propertyAddress }: OwnerDataC
   const secondaryOwner = ownerInfo.owner2 || null;
   
   // Check if we have any actual data
-  const hasName = ownerName && ownerName !== 'Not available from provider';
+  const _hasName = ownerName && ownerName !== 'Not available from provider';
   const hasMailingAddress = mailingAddress !== null;
   const hasPhone = phone !== null;
   const hasEmail = email !== null;

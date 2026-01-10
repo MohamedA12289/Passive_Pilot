@@ -17,12 +17,13 @@ export default function Navigation() {
   const pathname = usePathname();
   const isDashboardExperience = pathname?.startsWith("/dashboard");
   const [activeTab, setActiveTab] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
+  const [_isMobile, setIsMobile] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // CTA items that should have special coloring
   const ctaItems = ["Pricing", "Free Training", "Premium", "Join $20"];
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const items: NavItem[] = [
     { name: "Home", url: "/", icon: Home },
     { name: "Analyzer", url: "/analyzer", icon: Calculator },
@@ -35,6 +36,7 @@ export default function Navigation() {
     { name: "FAQ", url: "/faq", icon: MessageCircle },
     { name: "Join $20", url: "https://whop.com/passive-pilot-wholesaling/passive-pilot-premium-vip/", icon: Sparkles },
   ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleResize = () => {

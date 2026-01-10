@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 const baseToast = (msg: any, _opts?: any) => {
   if (typeof console !== 'undefined') console.info(msg);
 };

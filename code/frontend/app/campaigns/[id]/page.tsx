@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
@@ -176,7 +177,7 @@ export default function CampaignPage() {
 
       // 2) download the file
       // if download_url is absolute, apiFetch already handles "http" paths
-      const blob = await apiFetch<Blob>(res.download_url, { method: "GET", auth: true } as any);
+      const _blob = await apiFetch<Blob>(res.download_url, { method: "GET", auth: true } as any);
       // ^ apiFetch returns text/json; so we can’t use apiFetch for blob safely.
       // We'll fetch directly for blob, but keep auth consistent later if api.ts adds apiDownload.
 

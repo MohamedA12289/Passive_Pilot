@@ -11,7 +11,7 @@ interface RentalEstimateCardProps {
   estimatedRent?: number;
 }
 
-export default function RentalEstimateCard({ address, beds, baths, sqft, estimatedRent }: RentalEstimateCardProps) {
+export default function RentalEstimateCard({ address: _address, beds, baths, sqft, estimatedRent }: RentalEstimateCardProps) {
   const [showCalculations, setShowCalculations] = useState(false);
 
   if (!estimatedRent) {

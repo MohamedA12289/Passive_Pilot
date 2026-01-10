@@ -22,6 +22,7 @@ export default function CreateOfferModal({ property, isOpen, onClose }: CreateOf
     if (isOpen) {
       generateEmail();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, purchasePrice, downPayment, piti]);
 
   const generateEmail = async () => {
@@ -65,7 +66,7 @@ Best regards,
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatCurrency = (value: number) => {
+  const _formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
   };
 

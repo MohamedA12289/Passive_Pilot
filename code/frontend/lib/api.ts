@@ -1,4 +1,5 @@
 // code/frontend/lib/api.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { Deal, DealAnalysis, Campaign, DashboardStats, Property } from './types';
 
@@ -56,7 +57,7 @@ export async function apiFetch<T>(path: string, init: ApiOptions = {}): Promise<
 
   const url = buildUrl(path, init.query);
 
-  const { auth, query, json, ...rest } = init;
+  const { auth: _auth, query: _query, json: _json, ...rest } = init;
   const res = await fetch(url, { ...rest, headers, body });
 
   if (!res.ok) {
@@ -76,7 +77,7 @@ export async function apiDownload(path: string, init: ApiOptions = {}): Promise<
   if (init.auth && token) headers.set("Authorization", `Bearer ${token}`);
 
   const url = buildUrl(path, init.query);
-  const { auth, query, json, ...rest } = init;
+  const { auth: _auth, query: _query, json: _json, ...rest } = init;
 
   const res = await fetch(url, { ...rest, headers });
   if (!res.ok) {

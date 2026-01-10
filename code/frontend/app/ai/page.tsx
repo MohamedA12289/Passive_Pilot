@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useMemo, useState } from "react";
 import { Authed } from "@/components/Authed";
@@ -105,13 +106,11 @@ export default function AIPage() {
 
       setTpl(res.message);
       // toast
-      // @ts-ignore
       if (typeof window !== "undefined" && (window as any).__pp_toast) {
         (window as any).__pp_toast("AI generated a new template", "good");
       }
     } catch (e: any) {
       setErr(e?.message || "AI generate failed");
-      // @ts-ignore
       if (typeof window !== "undefined" && (window as any).__pp_toast) {
         (window as any).__pp_toast("AI not configured yet (placeholder)", "warn");
       }

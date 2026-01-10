@@ -36,7 +36,7 @@ export default function FlowMap({ value, onChange, placeholder }: Props) {
         return;
       }
       onChange?.(hit);
-    } catch (e: any) {
+    } catch {
       setError("Search failed. Try again.");
     } finally {
       setBusy(false);

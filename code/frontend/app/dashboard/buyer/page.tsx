@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
+// import { Input } from "@/components/Input";
 import { apiFetch } from "@/lib/api";
 
 interface BuyerProfile {
@@ -101,7 +101,7 @@ export default function BuyerProfilePage() {
         json: form,
       });
       setMessage("Profile saved successfully!");
-    } catch (err) {
+    } catch {
       setError("Failed to save profile");
     } finally {
       setSaving(false);

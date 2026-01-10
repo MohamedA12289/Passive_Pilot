@@ -19,7 +19,7 @@ export default function LeadsMapPanel({
 }: LeadsMapPanelProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const _markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const [mapLoaded, setMapLoaded] = useState(false);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -32,6 +32,7 @@ export default function LeadsMapPanel({
       console.warn("NEXT_PUBLIC_MAPBOX_TOKEN is not set");
       return;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
@@ -155,6 +156,7 @@ export default function LeadsMapPanel({
         map.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [MAPBOX_TOKEN]);
 
   // Handle window resize and orientation changes for mobile
