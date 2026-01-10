@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Home, DollarSign, Bed, Bath, Ruler, Calendar, MapPin, TrendingUp, X, Check, AlertCircle, Star, ArrowRight } from 'lucide-react';
+import { Home, DollarSign, Bed, Bath, Ruler, Calendar, MapPin, TrendingUp, X, AlertCircle, Star, ArrowRight } from 'lucide-react';
 
 interface CompEntry {
   address: string;
@@ -27,7 +27,7 @@ interface CompsComparisonViewProps {
 }
 
 export default function CompsComparisonView({ comps, subjectProperty, isOpen, onClose }: CompsComparisonViewProps) {
-  const [selectedComps, setSelectedComps] = useState<number[]>([0, 1, 2]); // Show first 3 by default
+  const [_selectedComps, _setSelectedComps] = useState<number[]>([0, 1, 2]); // Show first 3 by default
   const [showAll, setShowAll] = useState(false);
 
   if (!isOpen) return null;

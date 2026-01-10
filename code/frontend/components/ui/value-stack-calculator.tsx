@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, DollarSign, Sparkles, TrendingUp } from 'lucide-react';
+import { Check, TrendingUp, Sparkles } from 'lucide-react';
 
 interface StackItem {
   name: string;

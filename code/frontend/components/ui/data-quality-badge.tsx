@@ -1,6 +1,6 @@
 'use client'
 
-import { Shield, AlertTriangle, Info, CheckCircle2, Database } from 'lucide-react'
+import { AlertTriangle, Info, CheckCircle2, Database } from 'lucide-react'
 
 interface DataQualityBadgeProps {
   quality: 'REAL_RENTCAST' | 'HIGH' | 'MEDIUM' | 'LOW' | 'ESTIMATED'

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calculator, ArrowRight, DollarSign } from 'lucide-react';
+import { Calculator, ArrowRight } from 'lucide-react';
 
 export default function MiniMAOCalculator() {
   const [arv, setArv] = useState('');

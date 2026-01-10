@@ -43,7 +43,7 @@ export default function EnhancedOwnerContact({ ownerInfo, propertyAddress }: Enh
         setTimeout(() => setCopiedEmail(null), 2000);
       }
       toast.success(`${type === 'phone' ? 'Phone' : 'Email'} copied!`);
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy');
     }
   };

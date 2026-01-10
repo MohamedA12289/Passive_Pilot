@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { ChevronDown, Map as MapIcon, List } from "lucide-react";
 import DashboardTopNav from "@/components/leads/DashboardTopNav";
 import LeadsFiltersBar from "@/components/leads/LeadsFiltersBar";

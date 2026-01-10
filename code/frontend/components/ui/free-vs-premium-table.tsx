@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, X, Crown, Sparkles, Zap } from 'lucide-react';
+import { Check, X, Crown, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FreeVsPremiumTable() {

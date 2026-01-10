@@ -63,6 +63,7 @@ export function LiveActivityFeed() {
       clearInterval(interval);
       clearInterval(userInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getIcon = (type: Activity["type"]) => {
@@ -76,7 +77,7 @@ export function LiveActivityFeed() {
     }
   };
 
-  const getTimeAgo = (timestamp: Date) => {
+  const _getTimeAgo = (timestamp: Date) => {
     const seconds = Math.floor((new Date().getTime() - timestamp.getTime()) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);

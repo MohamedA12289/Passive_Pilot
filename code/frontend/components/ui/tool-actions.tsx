@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, Save, Share2 } from 'lucide-react';
+import { Copy, Check, Save } from 'lucide-react';
 
 interface ToolActionsProps {
   resultText: string;
-  toolName: string;
+  toolName?: string;
   onSave?: () => void;
 }
 
-export function ToolActions({ resultText, toolName, onSave }: ToolActionsProps) {
+export function ToolActions({ resultText, toolName: _toolName, onSave }: ToolActionsProps) {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
 

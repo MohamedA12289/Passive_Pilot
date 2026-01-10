@@ -49,6 +49,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
     validateSession();
 
+    // eslint-disable-next-line prefer-const
     unsub = onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         redirect("Please sign in to continue.");

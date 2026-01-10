@@ -1,4 +1,5 @@
 export type GeocodeResult = {
+/* eslint-disable @typescript-eslint/no-explicit-any */
   displayName: string;
   lat: number;
   lon: number;
